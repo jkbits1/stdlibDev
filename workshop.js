@@ -59,3 +59,88 @@ var n=100
 var data = new Float64Array(n)
 inmap(data, function(){return base.random.normal(0.0, 1.0)})
 
+inmap (data, function(d) {return base.roundn(d, -1)})
+
+var bmin = -5.0
+var bmax = 5.0
+
+var bwidth = 0.1
+var nbins = ((bmax-bmin)/bwidth) + 1
+
+var counts = new Int32Array(nbins)
+
+function bidx(bmin, bwidth, v) {return base.round(base.abs(bmin-v)/bwidth)}
+
+var dataLen = new Float64Array (100)
+
+inmap (dataLen, function(v, i) {counts[bidx(bmin, bwidth, data[i])] += 1 });
+
+
+var page1 = [
+    1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+    0, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+    0, 1, 1, 0, 0, 0, 0, 0, 0, 0
+];
+var page2 = [
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 1, 0, 0
+];
+
+function sum (acc, v) {return acc+v}
+var sum1 = reduce(page1, 0, sum)
+
+var sum2 = reduce(page2, 0, sum)
+var mu1 = sum1 / page1.length
+0.23333333333333334
+var mu2 = sum2 / page2.length
+0.06666666666666667
+var out = ttest2( page1, page2 )
+out.print()
+
+
+// spam killer
+
+var spam = datasets('SPAM_ASSASSIN')
+
+var training=[]
+
+
+var spamLen = new Float64Array (6046)
+
+inmap (dataLen, function(v, i) {if spam[i].group === 'easy-ham-1' || spam[i].group === 'spam-2'{ training.push(spam[i]) }});
+
+for ( var i = 0; i < spam.length; i++ ) {
+    if ( spam[i].group === 'easy-ham-1' || spam[i].group === 'spam-2' ) {
+        training.push( spam[i] );
+    }
+}
+
+function extractBody( email ) {
+    // Remove the meta-information before two initial line breaks:
+    var LINE_BREAK_REGEXP = /[\r\n]{2}([\s\S]*)$/;
+    var text = email.match( LINE_BREAK_REGEXP )[ 1 ];
+    // Turn to lowercase such that a word is treated the same no matter its case:
+    text = lowercase( text );
+    // Expand contractions, e.g. don't => do not:
+    text = expandContractions( text );
+    text = removePunctuation( text );
+    // Remove numbers and other special characters:
+    text = text.replace( /[0-9\-\+]/g, '' );
+    // Remove common words such as "the" or "and":
+    text = removeWords( text, STOPWORDS );
+    return text;
+}
+
+var STOPWORDS = datasets( 'STOPWORDS_EN' );
+
+
+extractBody(spam[0].text)
+
+
+training = inmap(training, function(x){
+  x.body = extractBody(x.text);
+  x.tokens = tokenize(x.body);
+  return x;
+})
+
