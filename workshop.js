@@ -73,7 +73,45 @@ function bidx(bmin, bwidth, v) {return base.round(base.abs(bmin-v)/bwidth)}
 
 var dataLen = new Float64Array (100)
 
-inmap (dataLen, function(v, i) {counts[bidx(bmin, bwidth, data[i])] += 1 });
+// at workshop
+inmap (dataLen,
+  function(v, i) {
+    counts[bidx(bmin, bwidth, data[i])] += 1 
+  });
+
+// later
+inmap (data, function (d, idx) {
+  counts_idx = bidx(bmin, bwidth, d);
+  counts[counts_idx] += 1;
+})
+
+inmap (dataLen,
+  function(v, i) {
+    return counts[bidx(bmin, bwidth, data[i])] += 1 
+  });
+
+// test
+inmap (dataLen,
+  function(v, i) {
+    return console.log(data[i]);
+    // counts[bidx(bmin, bwidth, data[i])] += 1 
+  });
+
+
+var bcenters = new Float64Array(nbins);
+var bc;
+
+inmap (bcenters, function (v, idx) {
+  var bc = bmin + (bwidth * idx);
+  bcenters[idx] = base.roundn(bc, -1);
+});
+
+var plt1 = plot([bcenters], [counts]);
+plt1.xLabel = 'x';
+plt1.yLabel = 'counts';
+
+vdom2html(plt1.render())
+
 
 
 var page1 = [
@@ -143,4 +181,6 @@ training = inmap(training, function(x){
   x.tokens = tokenize(x.body);
   return x;
 })
+
+kgryte@gmail.com
 
